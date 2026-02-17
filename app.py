@@ -8,6 +8,10 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google.oauth2.credentials import Credentials
 import time
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def extract_audio_from_video(video_path, output_audio_path):
     """
@@ -200,6 +204,33 @@ def cleanup_old_files(directory, retention_period_days=90):
     except Exception as e:
         print(f"Error during cleanup: {e}")
 
+def process_vtt_file(vtt_path):
+    """
+    Processes a .vtt file and extracts text content.
+
+    Args:
+        vtt_path (str): Path to the .vtt file.
+
+    Returns:
+        str: Extracted text content.
+    """
+    try:
+        with open(vtt_path, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+
+        # Filter out metadata and timestamps, keep only text lines
+        text_lines = []
+        for line in lines:
+            line = line.strip()
+            if not line or "-->" in line or line.isdigit():
+                continue
+            text_lines.append(line)
+
+        return "\n".join(text_lines)
+    except Exception as e:
+        print(f"Error processing .vtt file: {e}")
+        return None
+
 def main():
     """
     Streamlit app for file upload and transcription.
@@ -254,4 +285,11 @@ def main():
                     st.success("Googleドキュメントに書き出しました！（仮）")
 
 if __name__ == "__main__":
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+
+    if not openai_api_key or not google_api_key:
+        print("APIキーが設定されていません。環境変数を確認してください。")
+        exit(1)
+
     main()
