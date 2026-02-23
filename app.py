@@ -1,6 +1,5 @@
 import os
 from pydub import AudioSegment
-from pydub.playback import play
 from pydub.silence import split_on_silence
 import openai
 import streamlit as st
@@ -126,56 +125,30 @@ def summarize_transcription(transcription, api_key):
         print(f"Error during summarization: {e}")
         return None
 
-def export_to_google_docs(summary, credentials_json):
+def export_to_local_folder(summary, output_dir):
     """
-    Exports the summarized data to Google Docs.
+    Exports the summarized data to a local folder as a text file.
 
     Args:
         summary (dict): The structured summary containing 'agenda', 'main_points', and 'decisions'.
-        credentials_json (str): Path to the Google API credentials JSON file.
+        output_dir (str): Path to the directory where the file will be saved.
 
     Returns:
-        str: URL of the created Google Doc.
+        str: Path of the created file.
     """
     try:
-        # Authenticate with Google API
-        creds = Credentials.from_authorized_user_file(credentials_json, [
-            "https://www.googleapis.com/auth/documents",
-            "https://www.googleapis.com/auth/drive.file"
-        ])
-        service = build("docs", "v1", credentials=creds)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-        # Create a new Google Doc
-        document = service.documents().create(body={"title": "議事録"}).execute()
-        document_id = document.get("documentId")
+        file_path = os.path.join(output_dir, "議事録.txt")
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(f"議題の説明:\n{summary['agenda']}\n\n")
+            file.write(f"主な発言:\n{summary['main_points']}\n\n")
+            file.write(f"決定事項:\n{summary['decisions']}\n")
 
-        # Prepare content
-        content = (
-            f"議題の説明:\n{summary['agenda']}\n\n"
-            f"主な発言:\n{summary['main_points']}\n\n"
-            f"決定事項:\n{summary['decisions']}\n"
-        )
-
-        # Insert content into the document
-        requests = [
-            {
-                "insertText": {
-                    "location": {"index": 1},
-                    "text": content
-                }
-            }
-        ]
-        service.documents().batchUpdate(
-            documentId=document_id,
-            body={"requests": requests}
-        ).execute()
-
-        # Return the document URL
-        doc_url = f"https://docs.google.com/document/d/{document_id}/edit"
-        return doc_url
-
+        return file_path
     except Exception as e:
-        print(f"Error exporting to Google Docs: {e}")
+        print(f"Error exporting to local folder: {e}")
         return None
 
 def cleanup_old_files(directory, retention_period_days=90):
@@ -281,7 +254,7 @@ def main():
                 st.text_area("決定事項", summary["decisions"], height=100)
 
                 # Option to export to Google Docs (placeholder)
-                if st.button("Googleドキュメントへ書き出し"):
+                if st.button("ローカルフォルダへ保存"):
                     st.success("Googleドキュメントに書き出しました！（仮）")
 
 if __name__ == "__main__":
