@@ -67,7 +67,10 @@ def transcribe_audio_with_whisper(audio_path, api_key):
         openai.api_key = api_key
 
         with open(audio_path, "rb") as audio_file:
-            response = openai.Audio.transcribe("whisper-1", audio_file)
+            response = openai.Audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
 
         return response["text"]
     except Exception as e:
@@ -96,7 +99,7 @@ def summarize_transcription(transcription, api_key):
             f"\n文字起こし:\n{transcription}"
         )
 
-        response = openai.ChatCompletion.create(
+        response = openai.ChatCompletions.create(
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "あなたは会議の議事録を作成するアシスタントです。"},
@@ -161,7 +164,7 @@ def cleanup_old_files(directory, retention_period_days=90):
     """
     try:
         current_time = time.time()
-        retention_period_seconds = retention_period_days * 24 * 60 * 60
+        retention_period_seconds = retention_period_days * 24 * 66 * 60 * 60
 
         if not os.path.exists(directory):
             print(f"Directory {directory} does not exist.")
