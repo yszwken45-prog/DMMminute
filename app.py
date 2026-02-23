@@ -227,6 +227,10 @@ def main():
     # Meeting information input
     meeting_info = st.text_area("会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)")
 
+    # Initialize session state for save button
+    if "save_success" not in st.session_state:
+        st.session_state.save_success = False
+
     if st.button("議事録生成"):
         if not uploaded_file:
             st.error("ファイルをアップロードしてください。")
@@ -256,9 +260,16 @@ def main():
                 st.text_area("主な発言", summary["main_points"], height=200)
                 st.text_area("決定事項", summary["decisions"], height=100)
 
-                # Option to export to Google Docs (placeholder)
+                # Save button with session state
                 if st.button("ローカルフォルダへ保存"):
-                    st.success("Googleドキュメントに書き出しました！（仮）")
+                    output_dir = "output"
+                    file_path = export_to_local_folder(summary, output_dir)
+                    if file_path:
+                        st.session_state.save_success = True
+
+    # Display save success message
+    if st.session_state.save_success:
+        st.success("議事録がローカルフォルダに保存されました！")
 
 if __name__ == "__main__":
     openai_api_key = os.getenv("OPENAI_API_KEY")
