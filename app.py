@@ -1,6 +1,9 @@
 import os
+import re
 import shutil
 import subprocess
+import tempfile
+import uuid
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from openai import OpenAI
@@ -115,16 +118,87 @@ def transcribe_audio_with_whisper(audio_path):
             print("Error during transcription: OPENAI_API_KEY is not set")
             return None
 
-        with open(audio_path, "rb") as audio_file:
-            response = client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file
-            )
+        max_whisper_mb = 25
+        file_size_bytes = os.path.getsize(audio_path)
+        if file_size_bytes <= max_whisper_mb * 1024 * 1024:
+            return transcribe_single_file(client, audio_path)
 
-        return response.text
+        chunk_dir = tempfile.mkdtemp(prefix="whisper_chunks_")
+        try:
+            chunk_paths, split_error = split_audio_for_whisper_limit(
+                audio_path,
+                chunk_dir,
+                max_whisper_mb,
+            )
+            if split_error:
+                print(f"Error during chunk split: {split_error}")
+                return None
+
+            transcripts = []
+            for chunk_path in chunk_paths:
+                chunk_text = transcribe_single_file(client, chunk_path)
+                if not chunk_text:
+                    print(f"Error during transcription for chunk: {chunk_path}")
+                    return None
+                transcripts.append(chunk_text)
+
+            return "\n".join(transcripts)
+        finally:
+            shutil.rmtree(chunk_dir, ignore_errors=True)
     except Exception as e:
         print(f"Error during transcription: {e}")
         return None
+
+
+def transcribe_single_file(client, audio_path):
+    with open(audio_path, "rb") as audio_file:
+        response = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file
+        )
+    return response.text
+
+
+def split_audio_for_whisper_limit(audio_path, output_dir, max_chunk_mb):
+    try:
+        audio = AudioSegment.from_file(audio_path)
+        if len(audio) == 0:
+            return [], "音声が空のため分割できません。"
+
+        max_chunk_bytes = max_chunk_mb * 1024 * 1024
+        source_size = os.path.getsize(audio_path)
+        bytes_per_ms = source_size / max(len(audio), 1)
+        estimated_chunk_ms = int((max_chunk_bytes * 0.9) / max(bytes_per_ms, 1e-6))
+        chunk_ms = max(estimated_chunk_ms, 30_000)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        chunk_paths = []
+        start_ms = 0
+        chunk_index = 0
+
+        while start_ms < len(audio):
+            end_ms = min(start_ms + chunk_ms, len(audio))
+            segment = audio[start_ms:end_ms]
+            chunk_path = os.path.join(output_dir, f"chunk_{chunk_index}.mp3")
+            segment.export(chunk_path, format="mp3", bitrate="128k")
+
+            while os.path.getsize(chunk_path) > max_chunk_bytes and (end_ms - start_ms) > 15_000:
+                end_ms = start_ms + int((end_ms - start_ms) * 0.8)
+                segment = audio[start_ms:end_ms]
+                segment.export(chunk_path, format="mp3", bitrate="128k")
+
+            if os.path.getsize(chunk_path) > max_chunk_bytes:
+                return [], f"チャンク作成に失敗しました: {chunk_index}"
+
+            chunk_paths.append(chunk_path)
+            start_ms = end_ms
+            chunk_index += 1
+
+        return chunk_paths, None
+    except Exception as e:
+        return [], str(e)
 
 def summarize_transcription(transcription, meeting_info=""):
     """
@@ -145,7 +219,11 @@ def summarize_transcription(transcription, meeting_info=""):
 
         prompt = (
             "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
-            "0. 会議基本情報: サイボウズ情報から、会議名・日時・参加者・場所/URLなどを整理（不明は不明と記載）\n"
+            "0. 会議基本情報（必ず次の4項目をこの順で出力）:\n"
+            "会議名: ...\n"
+            "日時: ...\n"
+            "参加者: ...\n"
+            "場所/URL: ...\n"
             "1. 議題の説明: 会議の目的や概要\n"
             "2. 主な発言: 重要なやり取りの要約\n"
             "3. 決定事項: 確定したタスクや合意点\n"
@@ -166,15 +244,24 @@ def summarize_transcription(transcription, meeting_info=""):
             return None
 
         # Parse the summary into a structured format (basic parsing example)
+        fallback_meeting = parse_meeting_basic_info(meeting_info)
         summary = {
-            "meeting_info": meeting_info.strip() if meeting_info else "",
+            "meeting_name": fallback_meeting["meeting_name"],
+            "meeting_datetime": fallback_meeting["meeting_datetime"],
+            "participants": fallback_meeting["participants"],
+            "location_url": fallback_meeting["location_url"],
             "agenda": "",
             "main_points": "",
             "decisions": ""
         }
 
-        if "0. 会議基本情報:" in summary_text:
-            summary["meeting_info"] = summary_text.split("0. 会議基本情報:")[1].split("1. 議題の説明:")[0].strip()
+        if "0. 会議基本情報" in summary_text and "1. 議題の説明:" in summary_text:
+            meeting_info_text = summary_text.split("0. 会議基本情報")[1].split("1. 議題の説明:")[0].strip()
+            parsed_meeting = parse_meeting_basic_info(meeting_info_text)
+            summary["meeting_name"] = parsed_meeting["meeting_name"]
+            summary["meeting_datetime"] = parsed_meeting["meeting_datetime"]
+            summary["participants"] = parsed_meeting["participants"]
+            summary["location_url"] = parsed_meeting["location_url"]
 
         if "1. 議題の説明:" in summary_text:
             summary["agenda"] = summary_text.split("1. 議題の説明:")[1].split("2. 主な発言:")[0].strip()
@@ -187,6 +274,33 @@ def summarize_transcription(transcription, meeting_info=""):
     except Exception as e:
         print(f"Error during summarization: {e}")
         return None
+
+
+def parse_meeting_basic_info(text):
+    default_info = {
+        "meeting_name": "不明",
+        "meeting_datetime": "不明",
+        "participants": "不明",
+        "location_url": "不明",
+    }
+
+    if not text:
+        return default_info
+
+    patterns = {
+        "meeting_name": r"会議名\s*[:：]\s*(.+)",
+        "meeting_datetime": r"日時\s*[:：]\s*(.+)",
+        "participants": r"参加者\s*[:：]\s*(.+)",
+        "location_url": r"場所\s*/\s*URL\s*[:：]\s*(.+)",
+    }
+
+    parsed = default_info.copy()
+    for key, pattern in patterns.items():
+        match = re.search(pattern, text)
+        if match and match.group(1).strip():
+            parsed[key] = match.group(1).strip()
+
+    return parsed
 
 def export_to_local_folder(summary, output_dir):
     """
@@ -216,7 +330,11 @@ def export_to_local_folder(summary, output_dir):
 
 def build_minutes_text(summary):
     return (
-        f"会議基本情報:\n{summary.get('meeting_info', '')}\n\n"
+        "会議基本情報:\n"
+        f"会議名: {summary.get('meeting_name', '不明')}\n"
+        f"日時: {summary.get('meeting_datetime', '不明')}\n"
+        f"参加者: {summary.get('participants', '不明')}\n"
+        f"場所/URL: {summary.get('location_url', '不明')}\n\n"
         f"議題の説明:\n{summary['agenda']}\n\n"
         f"主な発言:\n{summary['main_points']}\n\n"
         f"決定事項:\n{summary['decisions']}\n"
@@ -293,53 +411,97 @@ def main():
         st.session_state.saved_file_path = None
     if "save_error" not in st.session_state:
         st.session_state.save_error = None
+    if "meeting_info_input" not in st.session_state:
+        st.session_state.meeting_info_input = ""
+    if "uploader_version" not in st.session_state:
+        st.session_state.uploader_version = 0
 
     # File upload
-    uploaded_file = st.file_uploader("音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)", type=["mp3", "m4a", "mp4"])
+    size_limit_label = st.radio(
+        "最大ファイルサイズ",
+        options=["25MB", "75MB"],
+        horizontal=True,
+        help="75MBを選ぶと、Whisper制限（25MB）を超える部分は自動分割して処理します。",
+    )
+    max_upload_mb = 75 if size_limit_label == "75MB" else 25
+
+    uploaded_file = st.file_uploader(
+        "音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)",
+        type=["mp3", "m4a", "mp4"],
+        key=f"uploaded_file_{st.session_state.uploader_version}",
+    )
 
     # Meeting information input
-    meeting_info = st.text_area("会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)")
+    meeting_info = st.text_area(
+        "会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)",
+        key="meeting_info_input"
+    )
 
-    if st.button("議事録生成"):
+    left_col, right_col = st.columns(2)
+    generate_clicked = left_col.button("議事録生成")
+    clear_clicked = right_col.button("クリア")
+
+    if clear_clicked:
+        st.session_state.summary = None
+        st.session_state.save_success = False
+        st.session_state.saved_file_path = None
+        st.session_state.save_error = None
+        st.session_state.meeting_info_input = ""
+        st.session_state.uploader_version += 1
+        st.rerun()
+
+    if generate_clicked:
         if not uploaded_file:
             st.error("ファイルをアップロードしてください。")
+        elif uploaded_file.size > max_upload_mb * 1024 * 1024:
+            st.error(f"ファイルサイズが上限を超えています（選択上限: {max_upload_mb}MB）。")
         elif not os.getenv("OPENAI_API_KEY"):
             st.error("OPENAI_API_KEY が設定されていません。.env を確認してください。")
         else:
             # Placeholder for processing
             with st.spinner("処理中..."):
-                # Save uploaded file temporarily
-                file_path = f"temp_{uploaded_file.name}"
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
+                temp_files = []
+                try:
+                    safe_name = os.path.basename(uploaded_file.name)
+                    file_path = f"temp_{uuid.uuid4().hex}_{safe_name}"
+                    temp_files.append(file_path)
+                    with open(file_path, "wb") as f:
+                        f.write(uploaded_file.getbuffer())
 
-                # Call audio extraction, transcription, and summarization functions
-                _, ext = os.path.splitext(uploaded_file.name.lower())
-                if ext == ".mp4":
-                    audio_path = "extracted_audio.mp3"
-                    extracted, extract_error = extract_audio_from_video(file_path, audio_path)
-                    if not extracted:
-                        st.error(f"音声抽出に失敗しました: {extract_error}")
+                    _, ext = os.path.splitext(uploaded_file.name.lower())
+                    if ext == ".mp4":
+                        audio_path = f"extracted_{uuid.uuid4().hex}.mp3"
+                        temp_files.append(audio_path)
+                        extracted, extract_error = extract_audio_from_video(file_path, audio_path)
+                        if not extracted:
+                            st.error(f"音声抽出に失敗しました: {extract_error}")
+                            st.stop()
+                    else:
+                        audio_path = file_path
+
+                    transcription = transcribe_audio_with_whisper(audio_path)
+                    if not transcription:
+                        st.error("文字起こしに失敗しました。APIキーと音声ファイルを確認してください。")
                         st.stop()
-                else:
-                    audio_path = file_path
 
-                transcription = transcribe_audio_with_whisper(audio_path)
-                if not transcription:
-                    st.error("文字起こしに失敗しました。APIキーと音声ファイルを確認してください。")
-                    st.stop()
+                    st.session_state.summary = summarize_transcription(transcription, meeting_info)
+                    if not st.session_state.summary:
+                        st.error("要約に失敗しました。しばらくして再試行してください。")
+                        st.stop()
 
-                st.session_state.summary = summarize_transcription(transcription, meeting_info)
-                if not st.session_state.summary:
-                    st.error("要約に失敗しました。しばらくして再試行してください。")
-                    st.stop()
-
-                st.session_state.save_success = False # Reset save success state
+                    st.session_state.save_success = False
+                finally:
+                    for temp_file in temp_files:
+                        if os.path.exists(temp_file):
+                            os.remove(temp_file)
 
     # Display results if they exist in session state
     if st.session_state.summary:
         st.subheader("生成された議事録")
-        st.text_area("会議基本情報", st.session_state.summary.get("meeting_info", ""), height=120)
+        st.text_input("会議名", st.session_state.summary.get("meeting_name", "不明"), disabled=True)
+        st.text_input("日時", st.session_state.summary.get("meeting_datetime", "不明"), disabled=True)
+        st.text_area("参加者", st.session_state.summary.get("participants", "不明"), height=80, disabled=True)
+        st.text_input("場所/URL", st.session_state.summary.get("location_url", "不明"), disabled=True)
         st.text_area("議題の説明", st.session_state.summary["agenda"], height=100)
         st.text_area("主な発言", st.session_state.summary["main_points"], height=200)
         st.text_area("決定事項", st.session_state.summary["decisions"], height=100)
