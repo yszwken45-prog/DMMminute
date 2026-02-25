@@ -1,4 +1,6 @@
 import os
+import shutil
+import subprocess
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from openai import OpenAI
@@ -25,15 +27,31 @@ def extract_audio_from_video(video_path, output_audio_path):
         output_audio_path (str): Path to save the extracted audio file.
     """
     try:
-        result = os.system(f'ffmpeg -y -i "{video_path}" -q:a 0 -map a "{output_audio_path}"')
-        if result != 0:
-            print("Error extracting audio: ffmpeg command failed")
-            return False
+        ffmpeg_bin = shutil.which("ffmpeg")
+        if not ffmpeg_bin:
+            return False, "ffmpeg が見つかりません。PATH を確認してください。"
+
+        command = [
+            ffmpeg_bin,
+            "-y",
+            "-i",
+            video_path,
+            "-vn",
+            "-acodec",
+            "libmp3lame",
+            output_audio_path,
+        ]
+
+        result = subprocess.run(command, capture_output=True, text=True)
+        if result.returncode != 0:
+            error_message = (result.stderr or result.stdout or "ffmpeg command failed").strip()
+            return False, error_message
+
         print(f"Audio extracted and saved to {output_audio_path}")
-        return True
+        return True, None
     except Exception as e:
         print(f"Error extracting audio: {e}")
-        return False
+        return False, str(e)
 
 def split_audio(audio_path, output_dir, silence_thresh=-40, min_silence_len=700):
     """
@@ -260,9 +278,9 @@ def main():
                 _, ext = os.path.splitext(uploaded_file.name.lower())
                 if ext == ".mp4":
                     audio_path = "extracted_audio.mp3"
-                    extracted = extract_audio_from_video(file_path, audio_path)
+                    extracted, extract_error = extract_audio_from_video(file_path, audio_path)
                     if not extracted:
-                        st.error("音声抽出に失敗しました。ffmpeg が利用可能か確認してください。")
+                        st.error(f"音声抽出に失敗しました: {extract_error}")
                         st.stop()
                 else:
                     audio_path = file_path
