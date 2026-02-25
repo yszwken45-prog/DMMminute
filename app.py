@@ -52,19 +52,18 @@ def split_audio(audio_path, output_dir, silence_thresh=-40, min_silence_len=700)
     except Exception as e:
         print(f"Error splitting audio: {e}")
 
-def transcribe_audio_with_whisper(audio_path, api_key):
+def transcribe_audio_with_whisper(audio_path):
     """
     Transcribes audio using OpenAI Whisper API.
 
     Args:
         audio_path (str): Path to the audio file to transcribe.
-        api_key (str): OpenAI API key.
 
     Returns:
         str: Transcribed text.
     """
     try:
-        openai.api_key = api_key
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
         with open(audio_path, "rb") as audio_file:
             response = openai.Audio.transcriptions.create(
@@ -77,19 +76,18 @@ def transcribe_audio_with_whisper(audio_path, api_key):
         print(f"Error during transcription: {e}")
         return None
 
-def summarize_transcription(transcription, api_key):
+def summarize_transcription(transcription):
     """
     Summarizes the transcription using GPT-4o.
 
     Args:
         transcription (str): The transcribed text to summarize.
-        api_key (str): OpenAI API key.
 
     Returns:
         dict: A dictionary containing the structured summary with keys 'agenda', 'main_points', and 'decisions'.
     """
     try:
-        openai.api_key = api_key
+        openai.api_key = os.getenv("OPENAI_API_KEY")
 
         prompt = (
             "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
@@ -250,8 +248,8 @@ def main():
             # Call audio extraction, transcription, and summarization functions
             audio_path = "extracted_audio.mp3"
             extract_audio_from_video(file_path, audio_path)
-            transcription = transcribe_audio_with_whisper(audio_path, openai_api_key)
-            summary = summarize_transcription(transcription, openai_api_key)
+            transcription = transcribe_audio_with_whisper(audio_path)
+            summary = summarize_transcription(transcription)
 
             # Display results
             if summary:
