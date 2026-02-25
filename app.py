@@ -211,11 +211,6 @@ def main():
     """
     st.set_page_config(page_title="議事録作成アプリ", layout="wide")
 
-    # Sidebar for API keys
-    st.sidebar.header("設定")
-    openai_api_key = st.sidebar.text_input("OpenAI APIキー", type="password")
-    google_api_key = st.sidebar.text_input("Google APIキー", type="password")
-
     # Main area
     st.title("議事録作成アプリ")
 
@@ -232,10 +227,6 @@ def main():
     if st.button("議事録生成"):
         if not uploaded_file:
             st.error("ファイルをアップロードしてください。")
-            return
-
-        if not openai_api_key:
-            st.error("OpenAI APIキーを入力してください。")
             return
 
         # Placeholder for processing
