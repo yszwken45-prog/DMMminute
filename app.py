@@ -126,15 +126,16 @@ def transcribe_audio_with_whisper(audio_path):
         print(f"Error during transcription: {e}")
         return None
 
-def summarize_transcription(transcription):
+def summarize_transcription(transcription, meeting_info=""):
     """
     Summarizes the transcription using GPT-4o.
 
     Args:
         transcription (str): The transcribed text to summarize.
+        meeting_info (str): Cybozu schedule information pasted by the user.
 
     Returns:
-        dict: A dictionary containing the structured summary with keys 'agenda', 'main_points', and 'decisions'.
+        dict: A dictionary containing the structured summary with keys 'meeting_info', 'agenda', 'main_points', and 'decisions'.
     """
     try:
         client = get_openai_client()
@@ -144,9 +145,11 @@ def summarize_transcription(transcription):
 
         prompt = (
             "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
+            "0. 会議基本情報: サイボウズ情報から、会議名・日時・参加者・場所/URLなどを整理（不明は不明と記載）\n"
             "1. 議題の説明: 会議の目的や概要\n"
             "2. 主な発言: 重要なやり取りの要約\n"
             "3. 決定事項: 確定したタスクや合意点\n"
+            f"\nサイボウズの会議情報:\n{meeting_info or '（入力なし）'}"
             f"\n文字起こし:\n{transcription}"
         )
 
@@ -164,10 +167,14 @@ def summarize_transcription(transcription):
 
         # Parse the summary into a structured format (basic parsing example)
         summary = {
+            "meeting_info": meeting_info.strip() if meeting_info else "",
             "agenda": "",
             "main_points": "",
             "decisions": ""
         }
+
+        if "0. 会議基本情報:" in summary_text:
+            summary["meeting_info"] = summary_text.split("0. 会議基本情報:")[1].split("1. 議題の説明:")[0].strip()
 
         if "1. 議題の説明:" in summary_text:
             summary["agenda"] = summary_text.split("1. 議題の説明:")[1].split("2. 主な発言:")[0].strip()
@@ -209,6 +216,7 @@ def export_to_local_folder(summary, output_dir):
 
 def build_minutes_text(summary):
     return (
+        f"会議基本情報:\n{summary.get('meeting_info', '')}\n\n"
         f"議題の説明:\n{summary['agenda']}\n\n"
         f"主な発言:\n{summary['main_points']}\n\n"
         f"決定事項:\n{summary['decisions']}\n"
@@ -321,7 +329,7 @@ def main():
                     st.error("文字起こしに失敗しました。APIキーと音声ファイルを確認してください。")
                     st.stop()
 
-                st.session_state.summary = summarize_transcription(transcription)
+                st.session_state.summary = summarize_transcription(transcription, meeting_info)
                 if not st.session_state.summary:
                     st.error("要約に失敗しました。しばらくして再試行してください。")
                     st.stop()
@@ -331,6 +339,7 @@ def main():
     # Display results if they exist in session state
     if st.session_state.summary:
         st.subheader("生成された議事録")
+        st.text_area("会議基本情報", st.session_state.summary.get("meeting_info", ""), height=120)
         st.text_area("議題の説明", st.session_state.summary["agenda"], height=100)
         st.text_area("主な発言", st.session_state.summary["main_points"], height=200)
         st.text_area("決定事項", st.session_state.summary["decisions"], height=100)
