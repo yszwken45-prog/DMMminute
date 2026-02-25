@@ -110,18 +110,20 @@ def transcribe_audio_with_whisper(audio_path):
         audio_path (str): Path to the audio file to transcribe.
 
     Returns:
-        str: Transcribed text.
+        tuple[str | None, str | None]: (Transcribed text, error message)
     """
     try:
         client = get_openai_client()
         if not client:
-            print("Error during transcription: OPENAI_API_KEY is not set")
-            return None
+            msg = "OPENAI_API_KEY is not set"
+            print(f"Error during transcription: {msg}")
+            return None, msg
 
         max_whisper_mb = 25
         file_size_bytes = os.path.getsize(audio_path)
         if file_size_bytes <= max_whisper_mb * 1024 * 1024:
-            return transcribe_single_file(client, audio_path)
+            text, single_error = transcribe_single_file(client, audio_path)
+            return text, single_error
 
         chunk_dir = tempfile.mkdtemp(prefix="whisper_chunks_")
         try:
@@ -132,31 +134,35 @@ def transcribe_audio_with_whisper(audio_path):
             )
             if split_error:
                 print(f"Error during chunk split: {split_error}")
-                return None
+                return None, f"音声分割に失敗しました: {split_error}"
 
             transcripts = []
             for chunk_path in chunk_paths:
                 chunk_text = transcribe_single_file(client, chunk_path)
+                chunk_text, chunk_error = transcribe_single_file(client, chunk_path)
                 if not chunk_text:
-                    print(f"Error during transcription for chunk: {chunk_path}")
-                    return None
+                    print(f"Error during transcription for chunk: {chunk_path}, {chunk_error}")
+                    return None, f"分割音声の文字起こしに失敗しました: {chunk_error}"
                 transcripts.append(chunk_text)
 
-            return "\n".join(transcripts)
+            return "\n".join(transcripts), None
         finally:
             shutil.rmtree(chunk_dir, ignore_errors=True)
     except Exception as e:
         print(f"Error during transcription: {e}")
-        return None
+        return None, str(e)
 
 
 def transcribe_single_file(client, audio_path):
-    with open(audio_path, "rb") as audio_file:
-        response = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file
-        )
-    return response.text
+    try:
+        with open(audio_path, "rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+        return response.text, None
+    except Exception as e:
+        return None, str(e)
 
 
 def split_audio_for_whisper_limit(audio_path, output_dir, max_chunk_mb):
@@ -479,9 +485,12 @@ def main():
                     else:
                         audio_path = file_path
 
-                    transcription = transcribe_audio_with_whisper(audio_path)
+                    transcription, transcription_error = transcribe_audio_with_whisper(audio_path)
                     if not transcription:
-                        st.error("文字起こしに失敗しました。APIキーと音声ファイルを確認してください。")
+                        st.error(
+                            "文字起こしに失敗しました。"
+                            f"\n詳細: {transcription_error or '不明なエラー'}"
+                        )
                         st.stop()
 
                     st.session_state.summary = summarize_transcription(transcription, meeting_info)
