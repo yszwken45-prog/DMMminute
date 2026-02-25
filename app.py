@@ -190,22 +190,23 @@ def export_to_local_folder(summary, output_dir):
         output_dir (str): Path to the directory where the file will be saved.
 
     Returns:
-        str: Path of the created file.
+        tuple[str | None, str | None]: (Path of the created file, error message)
     """
     try:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+        output_dir_abs = os.path.abspath(output_dir)
+        if not os.path.exists(output_dir_abs):
+            os.makedirs(output_dir_abs)
 
-        file_path = os.path.join(output_dir, "議事録.txt")
+        file_path = os.path.join(output_dir_abs, "議事録.txt")
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(f"議題の説明:\n{summary['agenda']}\n\n")
             file.write(f"主な発言:\n{summary['main_points']}\n\n")
             file.write(f"決定事項:\n{summary['decisions']}\n")
 
-        return file_path
+        return file_path, None
     except Exception as e:
         print(f"Error exporting to local folder: {e}")
-        return None
+        return None, str(e)
 
 def cleanup_old_files(directory, retention_period_days=90):
     """
@@ -274,6 +275,10 @@ def main():
         st.session_state.summary = None
     if "save_success" not in st.session_state:
         st.session_state.save_success = False
+    if "saved_file_path" not in st.session_state:
+        st.session_state.saved_file_path = None
+    if "save_error" not in st.session_state:
+        st.session_state.save_error = None
 
     # File upload
     uploaded_file = st.file_uploader("音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)", type=["mp3", "m4a", "mp4"])
@@ -327,13 +332,21 @@ def main():
         # Save button with session state
         if st.button("ローカルフォルダへ保存"):
             output_dir = "output"
-            file_path = export_to_local_folder(st.session_state.summary, output_dir)
+            file_path, save_error = export_to_local_folder(st.session_state.summary, output_dir)
             if file_path:
                 st.session_state.save_success = True
+                st.session_state.saved_file_path = file_path
+                st.session_state.save_error = None
+            else:
+                st.session_state.save_success = False
+                st.session_state.saved_file_path = None
+                st.session_state.save_error = save_error
 
     # Display save success message
     if st.session_state.save_success:
-        st.success("議事録がローカルフォルダに保存されました！")
+        st.success(f"議事録がローカルフォルダに保存されました！\n保存先: {st.session_state.saved_file_path}")
+    elif st.session_state.save_error:
+        st.error(f"保存に失敗しました: {st.session_state.save_error}")
 
 if __name__ == "__main__":
     main()
