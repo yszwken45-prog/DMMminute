@@ -31,6 +31,24 @@ def extract_audio_from_video(video_path, output_audio_path):
         if not ffmpeg_bin:
             return False, "ffmpeg が見つかりません。PATH を確認してください。"
 
+        ffprobe_bin = shutil.which("ffprobe")
+        if ffprobe_bin:
+            probe_command = [
+                ffprobe_bin,
+                "-v",
+                "error",
+                "-select_streams",
+                "a",
+                "-show_entries",
+                "stream=index",
+                "-of",
+                "csv=p=0",
+                video_path,
+            ]
+            probe_result = subprocess.run(probe_command, capture_output=True, text=True)
+            if probe_result.returncode == 0 and not probe_result.stdout.strip():
+                return False, "この動画ファイルには音声トラックがありません。音声付きの mp4 または mp3/m4a をアップロードしてください。"
+
         command = [
             ffmpeg_bin,
             "-y",
@@ -45,6 +63,8 @@ def extract_audio_from_video(video_path, output_audio_path):
         result = subprocess.run(command, capture_output=True, text=True)
         if result.returncode != 0:
             error_message = (result.stderr or result.stdout or "ffmpeg command failed").strip()
+            if "does not contain any stream" in error_message.lower():
+                return False, "この動画ファイルには音声トラックがありません。音声付きの mp4 または mp3/m4a をアップロードしてください。"
             return False, error_message
 
         print(f"Audio extracted and saved to {output_audio_path}")
