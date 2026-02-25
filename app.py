@@ -1,16 +1,20 @@
 import os
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-import openai
+from openai import OpenAI
 import streamlit as st
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
-from google.oauth2.credentials import Credentials
 import time
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+
+def get_openai_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    return OpenAI(api_key=api_key)
 
 def extract_audio_from_video(video_path, output_audio_path):
     """
@@ -21,10 +25,15 @@ def extract_audio_from_video(video_path, output_audio_path):
         output_audio_path (str): Path to save the extracted audio file.
     """
     try:
-        os.system(f"ffmpeg -i {video_path} -q:a 0 -map a {output_audio_path}")
+        result = os.system(f'ffmpeg -y -i "{video_path}" -q:a 0 -map a "{output_audio_path}"')
+        if result != 0:
+            print("Error extracting audio: ffmpeg command failed")
+            return False
         print(f"Audio extracted and saved to {output_audio_path}")
+        return True
     except Exception as e:
         print(f"Error extracting audio: {e}")
+        return False
 
 def split_audio(audio_path, output_dir, silence_thresh=-40, min_silence_len=700):
     """
@@ -63,15 +72,18 @@ def transcribe_audio_with_whisper(audio_path):
         str: Transcribed text.
     """
     try:
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        client = get_openai_client()
+        if not client:
+            print("Error during transcription: OPENAI_API_KEY is not set")
+            return None
 
         with open(audio_path, "rb") as audio_file:
-            response = openai.Audio.transcriptions.create(
+            response = client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file
             )
 
-        return response["text"]
+        return response.text
     except Exception as e:
         print(f"Error during transcription: {e}")
         return None
@@ -87,7 +99,10 @@ def summarize_transcription(transcription):
         dict: A dictionary containing the structured summary with keys 'agenda', 'main_points', and 'decisions'.
     """
     try:
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        client = get_openai_client()
+        if not client:
+            print("Error during summarization: OPENAI_API_KEY is not set")
+            return None
 
         prompt = (
             "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
@@ -97,15 +112,17 @@ def summarize_transcription(transcription):
             f"\n文字起こし:\n{transcription}"
         )
 
-        response = openai.ChatCompletions.create(
-            model="gpt-4",
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "あなたは会議の議事録を作成するアシスタントです。"},
                 {"role": "user", "content": prompt}
             ]
         )
 
-        summary_text = response["choices"][0]["message"]["content"]
+        summary_text = response.choices[0].message.content
+        if not summary_text:
+            return None
 
         # Parse the summary into a structured format (basic parsing example)
         summary = {
@@ -229,6 +246,8 @@ def main():
     if st.button("議事録生成"):
         if not uploaded_file:
             st.error("ファイルをアップロードしてください。")
+        elif not os.getenv("OPENAI_API_KEY"):
+            st.error("OPENAI_API_KEY が設定されていません。.env を確認してください。")
         else:
             # Placeholder for processing
             with st.spinner("処理中..."):
@@ -238,10 +257,26 @@ def main():
                     f.write(uploaded_file.getbuffer())
 
                 # Call audio extraction, transcription, and summarization functions
-                audio_path = "extracted_audio.mp3"
-                extract_audio_from_video(file_path, audio_path)
+                _, ext = os.path.splitext(uploaded_file.name.lower())
+                if ext == ".mp4":
+                    audio_path = "extracted_audio.mp3"
+                    extracted = extract_audio_from_video(file_path, audio_path)
+                    if not extracted:
+                        st.error("音声抽出に失敗しました。ffmpeg が利用可能か確認してください。")
+                        st.stop()
+                else:
+                    audio_path = file_path
+
                 transcription = transcribe_audio_with_whisper(audio_path)
+                if not transcription:
+                    st.error("文字起こしに失敗しました。APIキーと音声ファイルを確認してください。")
+                    st.stop()
+
                 st.session_state.summary = summarize_transcription(transcription)
+                if not st.session_state.summary:
+                    st.error("要約に失敗しました。しばらくして再試行してください。")
+                    st.stop()
+
                 st.session_state.save_success = False # Reset save success state
 
     # Display results if they exist in session state
@@ -263,11 +298,4 @@ def main():
         st.success("議事録がローカルフォルダに保存されました！")
 
 if __name__ == "__main__":
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    google_api_key = os.getenv("GOOGLE_API_KEY")
-
-    if not openai_api_key or not google_api_key:
-        print("APIキーが設定されていません。環境変数を確認してください。")
-        exit(1)
-
     main()
