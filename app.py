@@ -214,47 +214,49 @@ def main():
     # Main area
     st.title("議事録作成アプリ")
 
+    # Initialize session state
+    if "summary" not in st.session_state:
+        st.session_state.summary = None
+    if "save_success" not in st.session_state:
+        st.session_state.save_success = False
+
     # File upload
     uploaded_file = st.file_uploader("音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)", type=["mp3", "m4a", "mp4"])
 
     # Meeting information input
     meeting_info = st.text_area("会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)")
 
-    # Initialize session state for save button
-    if "save_success" not in st.session_state:
-        st.session_state.save_success = False
-
     if st.button("議事録生成"):
         if not uploaded_file:
             st.error("ファイルをアップロードしてください。")
-            return
+        else:
+            # Placeholder for processing
+            with st.spinner("処理中..."):
+                # Save uploaded file temporarily
+                file_path = f"temp_{uploaded_file.name}"
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
 
-        # Placeholder for processing
-        with st.spinner("処理中..."):
-            # Save uploaded file temporarily
-            file_path = f"temp_{uploaded_file.name}"
-            with open(file_path, "wb") as f:
-                f.write(uploaded_file.getbuffer())
+                # Call audio extraction, transcription, and summarization functions
+                audio_path = "extracted_audio.mp3"
+                extract_audio_from_video(file_path, audio_path)
+                transcription = transcribe_audio_with_whisper(audio_path)
+                st.session_state.summary = summarize_transcription(transcription)
+                st.session_state.save_success = False # Reset save success state
 
-            # Call audio extraction, transcription, and summarization functions
-            audio_path = "extracted_audio.mp3"
-            extract_audio_from_video(file_path, audio_path)
-            transcription = transcribe_audio_with_whisper(audio_path)
-            summary = summarize_transcription(transcription)
+    # Display results if they exist in session state
+    if st.session_state.summary:
+        st.subheader("生成された議事録")
+        st.text_area("議題の説明", st.session_state.summary["agenda"], height=100)
+        st.text_area("主な発言", st.session_state.summary["main_points"], height=200)
+        st.text_area("決定事項", st.session_state.summary["decisions"], height=100)
 
-            # Display results
-            if summary:
-                st.subheader("生成された議事録")
-                st.text_area("議題の説明", summary["agenda"], height=100)
-                st.text_area("主な発言", summary["main_points"], height=200)
-                st.text_area("決定事項", summary["decisions"], height=100)
-
-                # Save button with session state
-                if st.button("ローカルフォルダへ保存"):
-                    output_dir = "output"
-                    file_path = export_to_local_folder(summary, output_dir)
-                    if file_path:
-                        st.session_state.save_success = True
+        # Save button with session state
+        if st.button("ローカルフォルダへ保存"):
+            output_dir = "output"
+            file_path = export_to_local_folder(st.session_state.summary, output_dir)
+            if file_path:
+                st.session_state.save_success = True
 
     # Display save success message
     if st.session_state.save_success:
