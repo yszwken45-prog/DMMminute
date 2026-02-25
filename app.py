@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
+from datetime import datetime
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from openai import OpenAI
@@ -334,6 +335,42 @@ def export_to_local_folder(summary, output_dir):
         return None, str(e)
 
 
+def export_transcription_to_local_folder(transcription, output_dir):
+    """
+    Exports the raw transcription text to a local folder as a text file.
+
+    Args:
+        transcription (str): Raw transcription text.
+        output_dir (str): Path to the directory where the file will be saved.
+
+    Returns:
+        tuple[str | None, str | None]: (Path of the created file, error message)
+    """
+    try:
+        output_dir_abs = os.path.abspath(output_dir)
+        if not os.path.exists(output_dir_abs):
+            os.makedirs(output_dir_abs)
+
+        file_path = os.path.join(output_dir_abs, "文字起こし生データ.txt")
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(build_transcription_raw_text(transcription))
+
+        return file_path, None
+    except Exception as e:
+        print(f"Error exporting transcription to local folder: {e}")
+        return None, str(e)
+
+
+def build_transcription_raw_text(transcription):
+    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return (
+        f"生成日時: {generated_at}\n"
+        "\n"
+        "--- 文字起こし生データ ---\n"
+        f"{transcription or ''}\n"
+    )
+
+
 def build_minutes_text(summary):
     return (
         "会議基本情報:\n"
@@ -421,6 +458,14 @@ def main():
         st.session_state.meeting_info_input = ""
     if "uploader_version" not in st.session_state:
         st.session_state.uploader_version = 0
+    if "transcription" not in st.session_state:
+        st.session_state.transcription = None
+    if "transcription_save_success" not in st.session_state:
+        st.session_state.transcription_save_success = False
+    if "saved_transcription_file_path" not in st.session_state:
+        st.session_state.saved_transcription_file_path = None
+    if "transcription_save_error" not in st.session_state:
+        st.session_state.transcription_save_error = None
 
     # File upload
     size_limit_label = st.radio(
@@ -449,9 +494,13 @@ def main():
 
     if clear_clicked:
         st.session_state.summary = None
+        st.session_state.transcription = None
         st.session_state.save_success = False
         st.session_state.saved_file_path = None
         st.session_state.save_error = None
+        st.session_state.transcription_save_success = False
+        st.session_state.saved_transcription_file_path = None
+        st.session_state.transcription_save_error = None
         st.session_state.meeting_info_input = ""
         st.session_state.uploader_version += 1
         st.rerun()
@@ -493,6 +542,8 @@ def main():
                         )
                         st.stop()
 
+                    st.session_state.transcription = transcription
+
                     st.session_state.summary = summarize_transcription(transcription, meeting_info)
                     if not st.session_state.summary:
                         st.error("要約に失敗しました。しばらくして再試行してください。")
@@ -522,6 +573,14 @@ def main():
             mime="text/plain",
         )
 
+        if st.session_state.transcription:
+            st.download_button(
+                "文字起こし生データをPCにダウンロード",
+                data=build_transcription_raw_text(st.session_state.transcription),
+                file_name="文字起こし生データ.txt",
+                mime="text/plain",
+            )
+
         # Save button with session state
         if st.button("ローカルフォルダへ保存"):
             output_dir = "output"
@@ -535,11 +594,31 @@ def main():
                 st.session_state.saved_file_path = None
                 st.session_state.save_error = save_error
 
+        if st.session_state.transcription and st.button("文字起こし生データをローカルフォルダへ保存"):
+            output_dir = "output"
+            file_path, save_error = export_transcription_to_local_folder(st.session_state.transcription, output_dir)
+            if file_path:
+                st.session_state.transcription_save_success = True
+                st.session_state.saved_transcription_file_path = file_path
+                st.session_state.transcription_save_error = None
+            else:
+                st.session_state.transcription_save_success = False
+                st.session_state.saved_transcription_file_path = None
+                st.session_state.transcription_save_error = save_error
+
     # Display save success message
     if st.session_state.save_success:
         st.success(f"議事録がローカルフォルダに保存されました！\n保存先: {st.session_state.saved_file_path}")
     elif st.session_state.save_error:
         st.error(f"保存に失敗しました: {st.session_state.save_error}")
+
+    if st.session_state.transcription_save_success:
+        st.success(
+            "文字起こし生データがローカルフォルダに保存されました！"
+            f"\n保存先: {st.session_state.saved_transcription_file_path}"
+        )
+    elif st.session_state.transcription_save_error:
+        st.error(f"文字起こし生データの保存に失敗しました: {st.session_state.transcription_save_error}")
 
 if __name__ == "__main__":
     main()
