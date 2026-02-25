@@ -199,14 +199,20 @@ def export_to_local_folder(summary, output_dir):
 
         file_path = os.path.join(output_dir_abs, "議事録.txt")
         with open(file_path, "w", encoding="utf-8") as file:
-            file.write(f"議題の説明:\n{summary['agenda']}\n\n")
-            file.write(f"主な発言:\n{summary['main_points']}\n\n")
-            file.write(f"決定事項:\n{summary['decisions']}\n")
+            file.write(build_minutes_text(summary))
 
         return file_path, None
     except Exception as e:
         print(f"Error exporting to local folder: {e}")
         return None, str(e)
+
+
+def build_minutes_text(summary):
+    return (
+        f"議題の説明:\n{summary['agenda']}\n\n"
+        f"主な発言:\n{summary['main_points']}\n\n"
+        f"決定事項:\n{summary['decisions']}\n"
+    )
 
 def cleanup_old_files(directory, retention_period_days=90):
     """
@@ -328,6 +334,13 @@ def main():
         st.text_area("議題の説明", st.session_state.summary["agenda"], height=100)
         st.text_area("主な発言", st.session_state.summary["main_points"], height=200)
         st.text_area("決定事項", st.session_state.summary["decisions"], height=100)
+
+        st.download_button(
+            "議事録をPCにダウンロード",
+            data=build_minutes_text(st.session_state.summary),
+            file_name="議事録.txt",
+            mime="text/plain",
+        )
 
         # Save button with session state
         if st.button("ローカルフォルダへ保存"):
