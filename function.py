@@ -22,6 +22,8 @@ from constants import (
     OPENAI_SUMMARY_MODEL,
     OPENAI_SYSTEM_PROMPT,
     OPENAI_WHISPER_MODEL,
+    PPTX_SUMMARY_SYSTEM_PROMPT,
+    PPTX_SUMMARY_USER_PROMPT,
     RAW_TRANSCRIPTION_FILE_NAME,
     SESSION_DEFAULTS,
     SUMMARY_PROMPT_TEMPLATE,
@@ -284,13 +286,39 @@ def extract_text_from_pptx(file_bytes):
         return None, str(e)
 
 
-def extract_text_from_pptx_files(uploaded_files, topics=None):
+def summarize_pptx_text(text):
     """
-    複数のPowerPointファイルからテキストを結合して抽出します。
+    PowerPointのスライドテキストをGPTで125字以内に要約します。
+
+    Args:
+        text (str): スライドから抽出したテキスト。
+
+    Returns:
+        str: 要約テキスト（失敗時は空文字）。
+    """
+    try:
+        client = get_openai_client()
+        if not client:
+            return ""
+        response = client.chat.completions.create(
+            model=OPENAI_SUMMARY_MODEL,
+            messages=[
+                {"role": "system", "content": PPTX_SUMMARY_SYSTEM_PROMPT},
+                {"role": "user", "content": PPTX_SUMMARY_USER_PROMPT.format(slide_text=text[:3000])},
+            ],
+            max_tokens=200,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception:
+        return ""
+
+
+def extract_text_from_pptx_files(uploaded_files):
+    """
+    複数のPowerPointファイルからテキストを抽出し、各ファイルの自動要約を付与して結合します。
 
     Args:
         uploaded_files (list): StreamlitのUploadedFileオブジェクトのリスト（最大7件）。
-        topics (list[str] | None): 各ファイルに対応する議題ラベルのリスト。
 
     Returns:
         tuple[str, list[str]]: (結合テキスト, エラーメッセージのリスト)
@@ -298,13 +326,13 @@ def extract_text_from_pptx_files(uploaded_files, topics=None):
     all_texts = []
     errors = []
     for i, f in enumerate(uploaded_files, start=1):
-        topic = (topics[i - 1] if topics and i - 1 < len(topics) else "").strip()
-        topic_label = f"議題: {topic}" if topic else "（議題未設定）"
         text, error = extract_text_from_pptx(f.getvalue())
         if error:
             errors.append(f"{f.name}: {error}")
         elif text:
-            all_texts.append(f"=== 資料{i}: {f.name} / {topic_label} ===\n{text}")
+            summary = summarize_pptx_text(text)
+            summary_label = f"要約: {summary}" if summary else "（要約なし）"
+            all_texts.append(f"=== 資料{i}: {f.name} / {summary_label} ===\n{text}")
     return "\n\n".join(all_texts), errors
 
 

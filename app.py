@@ -16,7 +16,6 @@ from constants import (
     OUTPUT_DIR,
     PAGE_LAYOUT,
     PPTX_MAX_FILES,
-    PPTX_TOPIC_PROMPT,
     PPTX_UPLOAD_PROMPT,
     SIZE_LIMIT_OPTIONS,
     UPLOAD_PROMPT,
@@ -65,16 +64,6 @@ def main():
     if pptx_files and len(pptx_files) > PPTX_MAX_FILES:
         st.warning(f"資料は最大{PPTX_MAX_FILES}ファイルまでです。先頭{PPTX_MAX_FILES}件のみ使用します。")
         pptx_files = pptx_files[:PPTX_MAX_FILES]
-
-    pptx_topics = []
-    if pptx_files:
-        st.markdown("**各資料の議題を入力してください**")
-        for i, f in enumerate(pptx_files, start=1):
-            topic = st.text_input(
-                f"資料{i}: {f.name} — {PPTX_TOPIC_PROMPT}",
-                key=f"pptx_topic_{st.session_state.uploader_version}_{i}",
-            )
-            pptx_topics.append(topic)
 
     meeting_info = st.text_area(
         MEETING_INFO_PROMPT,
@@ -129,7 +118,7 @@ def main():
 
                     reference_text = ""
                     if pptx_files:
-                        reference_text, pptx_errors = extract_text_from_pptx_files(pptx_files, pptx_topics)
+                        reference_text, pptx_errors = extract_text_from_pptx_files(pptx_files)
                         if pptx_errors:
                             st.warning("一部の資料の読み込みに失敗しました（無視して続行）:\n" + "\n".join(pptx_errors))
 
