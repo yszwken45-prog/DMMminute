@@ -22,7 +22,9 @@ from constants import (
     RAW_TRANSCRIPTION_FILE_NAME,
     SESSION_DEFAULTS,
     SUMMARY_PROMPT_TEMPLATE,
+    WHISPER_LANGUAGE,
     WHISPER_MAX_FILE_MB,
+    WHISPER_PROMPT,
 )
 
 load_dotenv()
@@ -183,6 +185,8 @@ def transcribe_single_file(client, audio_path):
             response = client.audio.transcriptions.create(
                 model=OPENAI_WHISPER_MODEL,
                 file=audio_file,
+                language=WHISPER_LANGUAGE,
+                prompt=WHISPER_PROMPT,
             )
         return response.text, None
     except Exception as e:

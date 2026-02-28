@@ -27,6 +27,16 @@ OPENAI_WHISPER_MODEL = "whisper-1"
 OPENAI_SUMMARY_MODEL = "gpt-4o-mini"
 WHISPER_MAX_FILE_MB = 25
 
+# 言語指定: 日本語に固定することで認識精度を向上
+WHISPER_LANGUAGE = "ja"
+
+# プロンプトヒント: 会議・議事録でよく使われる語句を渡すことで固有名詞や専門用語の精度を向上
+WHISPER_PROMPT = (
+    "これは日本語の会議音声です。議事録として文字起こしを行います。"
+    "参加者の発言をできるだけ正確に文字起こしてください。"
+    "アジェンダ、決定事項、タスク、期限、担当者などの情報を正確に記録してください。"
+)
+
 OPENAI_SYSTEM_PROMPT = "あなたは会議の議事録を作成するアシスタントです。"
 SUMMARY_PROMPT_TEMPLATE = (
     "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
