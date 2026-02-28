@@ -284,6 +284,27 @@ def extract_text_from_pptx(file_bytes):
         return None, str(e)
 
 
+def extract_text_from_pptx_files(uploaded_files):
+    """
+    複数のPowerPointファイルからテキストを結合して抽出します。
+
+    Args:
+        uploaded_files (list): StreamlitのUploadedFileオブジェクトのリスト（最大7件）。
+
+    Returns:
+        tuple[str, list[str]]: (結合テキスト, エラーメッセージのリスト)
+    """
+    all_texts = []
+    errors = []
+    for i, f in enumerate(uploaded_files, start=1):
+        text, error = extract_text_from_pptx(f.getvalue())
+        if error:
+            errors.append(f"{f.name}: {error}")
+        elif text:
+            all_texts.append(f"=== 資料{i}: {f.name} ===\n{text}")
+    return "\n\n".join(all_texts), errors
+
+
 def summarize_transcription(transcription, meeting_info="", reference_text=""):
     try:
         client = get_openai_client()
