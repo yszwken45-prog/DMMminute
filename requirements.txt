@@ -2,6 +2,7 @@ streamlit==1.41.1
 openai
 pydub
 scipy
+python-pptx
 ffmpeg-python
 google-api-python-client
 google-auth-oauthlib
