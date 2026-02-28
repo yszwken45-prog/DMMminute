@@ -284,12 +284,13 @@ def extract_text_from_pptx(file_bytes):
         return None, str(e)
 
 
-def extract_text_from_pptx_files(uploaded_files):
+def extract_text_from_pptx_files(uploaded_files, topics=None):
     """
     複数のPowerPointファイルからテキストを結合して抽出します。
 
     Args:
         uploaded_files (list): StreamlitのUploadedFileオブジェクトのリスト（最大7件）。
+        topics (list[str] | None): 各ファイルに対応する議題ラベルのリスト。
 
     Returns:
         tuple[str, list[str]]: (結合テキスト, エラーメッセージのリスト)
@@ -297,11 +298,13 @@ def extract_text_from_pptx_files(uploaded_files):
     all_texts = []
     errors = []
     for i, f in enumerate(uploaded_files, start=1):
+        topic = (topics[i - 1] if topics and i - 1 < len(topics) else "").strip()
+        topic_label = f"議題: {topic}" if topic else "（議題未設定）"
         text, error = extract_text_from_pptx(f.getvalue())
         if error:
             errors.append(f"{f.name}: {error}")
         elif text:
-            all_texts.append(f"=== 資料{i}: {f.name} ===\n{text}")
+            all_texts.append(f"=== 資料{i}: {f.name} / {topic_label} ===\n{text}")
     return "\n\n".join(all_texts), errors
 
 

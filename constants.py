@@ -11,6 +11,7 @@ UPLOAD_TYPES = ["mp3", "m4a", "mp4"]
 UPLOAD_PROMPT = "音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)"
 MEETING_INFO_PROMPT = "会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)"
 PPTX_UPLOAD_PROMPT = "参考資料（PowerPoint）をアップロードしてください（任意・最大7ファイル）"
+PPTX_TOPIC_PROMPT = "この資料の議題（任意）"
 PPTX_MAX_FILES = 7
 
 BUTTON_GENERATE = "議事録生成"
