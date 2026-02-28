@@ -1,3 +1,4 @@
+import io
 import os
 import re
 import shutil
@@ -5,6 +6,8 @@ import subprocess
 import tempfile
 import time
 from datetime import datetime
+
+from pptx import Presentation
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -253,7 +256,35 @@ def split_audio_for_whisper_limit(audio_path, output_dir, max_chunk_mb):
         return [], str(e)
 
 
-def summarize_transcription(transcription, meeting_info=""):
+def extract_text_from_pptx(file_bytes):
+    """
+    PowerPointファイルのバイト列からテキストを抽出します。
+
+    Args:
+        file_bytes (bytes): PowerPointファイルのバイト列。
+
+    Returns:
+        tuple[str | None, str | None]: (抽出テキスト, エラーメッセージ)
+    """
+    try:
+        prs = Presentation(io.BytesIO(file_bytes))
+        texts = []
+        for slide_num, slide in enumerate(prs.slides, start=1):
+            slide_texts = []
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    for para in shape.text_frame.paragraphs:
+                        line = "".join(run.text for run in para.runs).strip()
+                        if line:
+                            slide_texts.append(line)
+            if slide_texts:
+                texts.append(f"【スライド{slide_num}】\n" + "\n".join(slide_texts))
+        return "\n\n".join(texts), None
+    except Exception as e:
+        return None, str(e)
+
+
+def summarize_transcription(transcription, meeting_info="", reference_text=""):
     try:
         client = get_openai_client()
         if not client:
@@ -262,6 +293,7 @@ def summarize_transcription(transcription, meeting_info=""):
 
         prompt = SUMMARY_PROMPT_TEMPLATE.format(
             meeting_info=meeting_info or "（入力なし）",
+            reference_material=reference_text or "（アップロードなし）",
             transcription=transcription,
         )
 

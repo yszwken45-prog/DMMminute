@@ -10,6 +10,7 @@ UPLOAD_TYPES = ["mp3", "m4a", "mp4"]
 
 UPLOAD_PROMPT = "音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)"
 MEETING_INFO_PROMPT = "会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)"
+PPTX_UPLOAD_PROMPT = "参考資料（PowerPoint）をアップロードしてください（任意）"
 
 BUTTON_GENERATE = "議事録生成"
 BUTTON_CLEAR = "クリア"
@@ -62,6 +63,7 @@ SUMMARY_PROMPT_TEMPLATE = (
     "- 可能であれば数値をそのまま残してください（例: 3件、15%、2026/03/10、30分）。\n"
     "- 数値を伴う発言がない場合のみ、通常の重要発言を記載してください。\n"
     "\nサイボウズの会議情報:\n{meeting_info}"
+    "\n参考資料（PowerPoint）の内容:\n{reference_material}"
     "\n文字起こし:\n{transcription}"
 )
 

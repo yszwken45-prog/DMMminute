@@ -15,6 +15,7 @@ from constants import (
     MEETING_INFO_PROMPT,
     OUTPUT_DIR,
     PAGE_LAYOUT,
+    PPTX_UPLOAD_PROMPT,
     SIZE_LIMIT_OPTIONS,
     UPLOAD_PROMPT,
     UPLOAD_TYPES,
@@ -26,6 +27,7 @@ from function import (
     export_to_local_folder,
     export_transcription_to_local_folder,
     extract_audio_from_video,
+    extract_text_from_pptx,
     initialize_session_state,
     summarize_transcription,
     transcribe_audio_with_whisper,
@@ -50,6 +52,12 @@ def main():
         UPLOAD_PROMPT,
         type=UPLOAD_TYPES,
         key=f"uploaded_file_{st.session_state.uploader_version}",
+    )
+
+    pptx_file = st.file_uploader(
+        PPTX_UPLOAD_PROMPT,
+        type=["pptx"],
+        key=f"pptx_file_{st.session_state.uploader_version}",
     )
 
     meeting_info = st.text_area(
@@ -103,7 +111,14 @@ def main():
 
                     st.session_state.transcription = transcription
 
-                    st.session_state.summary = summarize_transcription(transcription, meeting_info)
+                    reference_text = ""
+                    if pptx_file:
+                        reference_text, pptx_error = extract_text_from_pptx(pptx_file.getvalue())
+                        if pptx_error:
+                            st.warning(f"参考資料の読み込みに失敗しました（無視して続行）: {pptx_error}")
+                            reference_text = ""
+
+                    st.session_state.summary = summarize_transcription(transcription, meeting_info, reference_text)
                     if not st.session_state.summary:
                         st.error("要約に失敗しました。しばらくして再試行してください。")
                         st.stop()
