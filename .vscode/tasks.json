@@ -1,0 +1,38 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run app.py for testing",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"app.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run app.py for testing",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"app.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Run app.py for testing",
+			"type": "shell",
+			"command": "C:/DMMminute/DMMminute/env/Scripts/python.exe",
+			"args": [
+				"app.py"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
+}

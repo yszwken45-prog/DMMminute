@@ -11,6 +11,8 @@ from openai import OpenAI
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 import streamlit as st
+from scipy.signal import butter, lfilter
+import numpy as np
 
 from constants import (
     MINUTES_FILE_NAME,
@@ -102,10 +104,23 @@ def extract_audio_from_video(video_path, output_audio_path):
 
 
 def split_audio(audio_path, output_dir, silence_thresh=-40, min_silence_len=700):
+    """
+    Splits an audio file into chunks based on silence, with noise reduction applied.
+
+    Args:
+        audio_path (str): Path to the input audio file.
+        output_dir (str): Directory to save the audio chunks.
+        silence_thresh (int): Silence threshold in dBFS.
+        min_silence_len (int): Minimum length of silence to consider for splitting (in ms).
+    """
     try:
         audio = AudioSegment.from_file(audio_path)
+
+        # Apply noise reduction
+        noise_reduced_audio = reduce_noise(audio)
+
         chunks = split_on_silence(
-            audio,
+            noise_reduced_audio,
             min_silence_len=min_silence_len,
             silence_thresh=silence_thresh,
         )
@@ -390,3 +405,43 @@ def process_vtt_file(vtt_path):
     except Exception as e:
         print(f"Error processing .vtt file: {e}")
         return None
+
+
+def reduce_noise(audio_segment, noise_reduction_level=0.02):
+    """
+    Reduces noise from an audio segment using a simple low-pass filter.
+
+    Args:
+        audio_segment (AudioSegment): The input audio segment.
+        noise_reduction_level (float): The level of noise reduction (0.0 to 1.0).
+
+    Returns:
+        AudioSegment: The noise-reduced audio segment.
+    """
+    # Convert AudioSegment to numpy array
+    samples = np.array(audio_segment.get_array_of_samples())
+
+    # Design a low-pass filter
+    def butter_lowpass(cutoff, fs, order=5):
+        nyquist = 0.5 * fs
+        normal_cutoff = cutoff / nyquist
+        b, a = butter(order, normal_cutoff, btype="low", analog=False)
+        return b, a
+
+    def apply_lowpass_filter(data, cutoff_freq, sample_rate):
+        b, a = butter_lowpass(cutoff_freq, sample_rate)
+        return lfilter(b, a, data)
+
+    # Apply low-pass filter
+    sample_rate = audio_segment.frame_rate
+    cutoff_frequency = sample_rate * noise_reduction_level
+    filtered_samples = apply_lowpass_filter(samples, cutoff_frequency, sample_rate)
+
+    # Convert back to AudioSegment
+    reduced_audio = audio_segment._spawn(filtered_samples.astype(np.int16).tobytes())
+    return reduced_audio
+
+# Example usage in split_audio or other functions:
+# audio = AudioSegment.from_file(audio_path)
+# noise_reduced_audio = reduce_noise(audio)
+# chunks = split_on_silence(noise_reduced_audio, ...)
