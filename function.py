@@ -22,6 +22,7 @@ from constants import (
     RAW_TRANSCRIPTION_FILE_NAME,
     SESSION_DEFAULTS,
     SUMMARY_PROMPT_TEMPLATE,
+    TRANSCRIPTION_WORD_REPLACEMENTS,
     WHISPER_LANGUAGE,
     WHISPER_MAX_FILE_MB,
     WHISPER_PROMPT,
@@ -179,6 +180,22 @@ def transcribe_audio_with_whisper(audio_path):
         return None, str(e)
 
 
+def apply_word_replacements(text):
+    """
+    Applies word replacements defined in TRANSCRIPTION_WORD_REPLACEMENTS
+    to the transcribed text.
+
+    Args:
+        text (str): The transcribed text.
+
+    Returns:
+        str: The text with replacements applied.
+    """
+    for wrong, correct in TRANSCRIPTION_WORD_REPLACEMENTS.items():
+        text = text.replace(wrong, correct)
+    return text
+
+
 def transcribe_single_file(client, audio_path):
     try:
         with open(audio_path, "rb") as audio_file:
@@ -188,7 +205,8 @@ def transcribe_single_file(client, audio_path):
                 language=WHISPER_LANGUAGE,
                 prompt=WHISPER_PROMPT,
             )
-        return response.text, None
+        text = apply_word_replacements(response.text)
+        return text, None
     except Exception as e:
         return None, str(e)
 
