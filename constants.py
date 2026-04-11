@@ -9,7 +9,7 @@ MAX_UPLOAD_MB_BY_LABEL = {
 UPLOAD_TYPES = ["mp3", "m4a", "mp4"]
 
 UPLOAD_PROMPT = "音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)"
-MEETING_INFO_PROMPT = "会議情報を入力してください (サイボウズOfficeの予定情報をコピペ)"
+MEETING_INFO_PROMPT = "会議情報を入力してください (予定情報をコピペ)"
 PPTX_UPLOAD_PROMPT = "参考資料（PowerPoint）をアップロードしてください（任意・最大7ファイル）"
 PPTX_MAX_FILES = 7
 PPTX_SUMMARY_SYSTEM_PROMPT = "あなたはPowerPointの内容を125字以内で簡潔に要約するアシスタントです。箇条書きは使わず1段落で答えてください。"
@@ -38,7 +38,7 @@ WHISPER_LANGUAGE = "ja"
 # キー: Whisperが誤認識しやすい表記 → 値: 正しい表記
 # 自社の専門用語・固有名詞に合わせて追加・編集してください
 TRANSCRIPTION_WORD_REPLACEMENTS = {
-    "配客状況": "廃却状況","政策省":"製作所","排却率":"廃却率"   
+    "配客状況": "廃却状況","政策省":"製作所","排却率":"廃却率"
     # 例: "かいぎ": "会議",
     # 例: "えんじにあ": "エンジニア",
 }
