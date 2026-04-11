@@ -1,1 +1,91 @@
-QVBQX1RJVExFID0gIuitsOS6i+mMsuS9nOaIkOOCouODl+ODqiIKUEFHRV9MQVlPVVQgPSAid2lkZSIKClNJWkVfTElNSVRfT1BUSU9OUyA9IFsiMjVNQiIsICI3NU1CIl0KTUFYX1VQTE9BRF9NQl9CWV9MQUJFTCA9IHsKICAgICIyNU1CIjogMjUsCiAgICAiNzVNQiI6IDc1LAp9ClVQTE9BRF9UWVBFUyA9IFsibXAzIiwgIm00YSIsICJtcDQiXQoKVVBMT0FEX1BST01QVCA9ICLpn7Plo7Djgb7jgZ/jga/li5XnlLvjg5XjgqHjgqTjg6vjgpLjgqLjg4Pjg5fjg63jg7zjg4njgZfjgabjgY/jgaDjgZXjgYQgKG1wMywgbTRhLCBtcDQpIgpNRUVUSU5HX0lORk9fUFJPTVBUID0gIuS8muitsOaDheWgseOCkuWFpeWKm+OBl+OBpuOBj+OBoOOBleOBhCAo5LqI5a6a5oOF5aCx44KS44Kz44OU44OaKSIKUFBUWF9VUExPQURfUFJPTVBUID0gIuWPguiAg+izh+aWme+8iFBvd2VyUG9pbnTvvInjgpLjgqLjg4Pjg5fjg63jg7zjg4njgZfjgabjgY/jgaDjgZXjgYTvvIjku7vmhI/jg7vmnIDlpKc344OV44Kh44Kk44Or77yJIgpQUFRYX01BWF9GSUxFUyA9IDcKUFBUWF9TVU1NQVJZX1NZU1RFTV9QUk9NUFQgPSAi44GC44Gq44Gf44GvUG93ZXJQb2ludOOBruWGheWuueOCkjEyNeWtl+S7peWGheOBp+ewoea9lOOBq+imgee0hOOBmeOCi+OCouOCt+OCueOCv+ODs+ODiOOBp+OBmeOAgueuh+adoeabuOOBjeOBr+S9v+OCj+OBmjHmrrXokL3jgafnrZTjgYjjgabjgY/jgaDjgZXjgYTjgIIiClBQVFhfU1VNTUFSWV9VU0VSX1BST01QVCA9ICLku6XkuIvjga5Qb3dlclBvaW5044Gu44K544Op44Kk44OJ44OG44Kt44K544OI44KSMTI15a2X5Lul5YaF44Gn6KaB57SE44GX44Gm44GP44Gg44GV44GE44CCXG5cbntzbGlkZV90ZXh0fSIKCkJVVFRPTl9HRU5FUkFURSA9ICLorbDkuovpjLLnlJ/miJAiCkJVVFRPTl9DTEVBUiA9ICLjgq/jg6rjgqIiCkJVVFRPTl9TQVZFX01JTlVURVMgPSAi44Ot44O844Kr44Or44OV44Kp44Or44OA44G45L+d5a2YIgpCVVRUT05fU0FWRV9SQVcgPSAi5paH5a2X6LW344GT44GX55Sf44OH44O844K/44KS44Ot44O844Kr44Or44OV44Kp44Or44OA44G45L+d5a2YIgoKRE9XTkxPQURfTUlOVVRFU19MQUJFTCA9ICLorbDkuovpjLLjgpJQQ+OBq+ODgOOCpuODs+ODreODvOODiSIKRE9XTkxPQURfUkFXX0xBQkVMID0gIuaWh+Wtl+i1t+OBk+OBl+eUn+ODh+ODvOOCv+OCklBD44Gr44OA44Km44Oz44Ot44O844OJIgoKTUlOVVRFU19GSUxFX05BTUUgPSAi6K2w5LqL6YyyLnR4dCIKUkFXX1RSQU5TQ1JJUFRJT05fRklMRV9OQU1FID0gIuaWh+Wtl+i1t+OBk+OBl+eUn+ODh+ODvOOCvy50eHQiCk9VVFBVVF9ESVIgPSAib3V0cHV0IgoKT1BFTkFJX1dISVNQRVJfTU9ERUwgPSAid2hpc3Blci0xIgpPUEVOQUlfU1VNTUFSWV9NT0RFTCA9ICJncHQtNG8tbWluaSIKV0hJU1BFUl9NQVhfRklMRV9NQiA9IDI1CgojIOiogOiqnuaMh+Wumjog5pel5pys6Kqe44Gr5Zu65a6a44GZ44KL44GT44Go44Gn6KqN6K2Y57K+5bqm44KS5ZCR5LiKCldISVNQRVJfTEFOR1VBR0UgPSAiamEiCgojIOaWh+Wtl+i1t+OBk+OBl+W+jOOBruWNmOiqnue9ruaPm+i+nuabuAojIOOCreODvDogV2hpc3BlcuOBjOiqpOiqjeitmOOBl+OChOOBmeOBhOihqOiomCDihpIg5YCkOiDmraPjgZfjgYTooajoqJgKIyDoh6rnpL7jga7lsILploDnlKjoqp7jg7vlm7rmnInlkI3oqZ7jgavlkIjjgo/jgZvjgabov73liqDjg7vnt6jpm4bjgZfjgabjgY/jgaDjgZXjgYQKVFJBTlNDUklQVElPTl9XT1JEX1JFUExBQ0VNRU5UUyA9IHsKICAgICLphY3lrqLnirbms4EiOiAi5buD5Y2054q25rOBIiwi5pS/562W55yBIjoi6KO95L2c5omAIiwi5o6S5Y20546HIjoi5buD5Y20546HIiAgIAogICAgIyDkvos6ICLjgYvjgYTjgY4iOiAi5Lya6K2wIiwKICAgICMg5L6LOiAi44GI44KT44GY44Gr44GCIjogIuOCqOODs+OCuOODi+OCoiIsCn0KCiMg44OX44Ot44Oz44OX44OI44OS44Oz44OIOiDkvJrorbDjg7vorbDkuovpjLLjgafjgojjgY/kvb/jgo/jgozjgovoqp7lj6XjgpLmuKHjgZnjgZPjgajjgaflm7rmnInlkI3oqZ7jgoTlsILploDnlKjoqp7jga7nsr7luqbjgpLlkJHkuIoKV0hJU1BFUl9QUk9NUFQgPSAoCiAgICAi44GT44KM44Gv5pel5pys6Kqe44Gu5Lya6K2w6Z+z5aOw44Gn44GZ44CC6K2w5LqL6Yyy44Go44GX44Gm5paH5a2X6LW344GT44GX44KS6KGM44GE44G+44GZ44CCIgogICAgIuWPguWKoOiAheOBrueZuuiogOOCkuOBp+OBjeOCi+OBoOOBkeato+eiuuOBq+aWh+Wtl+i1t+OBk+OBl+OBpuOBj+OBoOOBleOBhOOAgiIKICAgICLjgqLjgrjjgqfjg7Pjg4DjgIHmsbrlrprkuovpoIXjgIHjgr/jgrnjgq/jgIHmnJ/pmZDjgIHmi4XlvZPogIXjgarjganjga7mg4XloLHjgpLmraPnorrjgavoqJjpjLLjgZfjgabjgY/jgaDjgZXjgYTjgIIiCikKCk9QRU5BSV9TWVNURU1fUFJPTVBUID0gIuOBguOBquOBn+OBr+S8muitsOOBruitsOS6i+mMsuOCkuS9nOaIkOOBmeOCi+OCouOCt+OCueOCv+ODs+ODiOOBp+OBmeOAgiIKU1VNTUFSWV9QUk9NUFRfVEVNUExBVEUgPSAoCiAgICAi5Lul5LiL44Gu5Lya6K2w44Gu5paH5a2X6LW344GT44GX44KS6KaB57SE44GX44Gm44GP44Gg44GV44GE44CC5Lul5LiL44Gu44OV44Kp44O844Oe44OD44OI44Gn5Ye65Yqb44GX44Gm44GP44Gg44GV44GEOlxuIgogICAgIjAuIOS8muitsOWfuuacrOaDheWgse+8iOW/heOBmuasoeOBrjTpoIXnm67jgpLjgZPjga7poIbjgaflh7rlipvvvIk6XG4iCiAgICAi5Lya6K2w5ZCNOiAuLi5cbiIKICAgICLml6XmmYI6IC4uLlxuIgogICAgIuWPguWKoOiAhTogLi4uXG4iCiAgICAi5aC05omAL1VSTDogLi4uXG4iCiAgICAiMS4g6K2w6aGM44Gu6Kqs5piOOiDkvJrorbDjga7nm67nmoTjgoTmpoLopoFcbiIKICAgICIyLiDkuLvjgarnmbroqIA6IOmHjeimgeOBquOChOOCiuWPluOCiuOBruimgee0hO+8iOaVsOWApOOCkuS8tOOBhueZuuiogOOCkuWEquWFiOOAgeacgOS9jjjku7bku6XkuIrliJfmjJnvvIlcbiIKICAgICIzLiDmsbrlrprkuovpoIU6IOeiuuWumuOBl+OBn+OCv+OCueOCr+OChOWQiOaEj+eCuVxuIgogICAgIlxu5Ye65Yqb44Or44O844Or77yIMi4g5Li744Gq55m66KiA77yJOlxuIgogICAgIi0g5pyA5L2OOOS7tuOAgeWPr+iDveOBp+OBguOCjOOBsDEw5Lu25Lul5LiK44Gu55m66KiA44KS566H5p2h5pu444GN44Gn5YiX5oyZ44GX44Gm44GP44Gg44GV44GE44CCXG4iCiAgICAiLSDku6XkuIvjga7jgqvjg4bjgrTjg6rjgpLjgZnjgbnjgabntrLnvoXjgZnjgovjgojjgYbnmbroqIDjgpLmir3lh7rjgZfjgabjgY/jgaDjgZXjgYQ6XG4iCiAgICAiICDjgJDmlbDlgKTloLHlkYrjgJHku7bmlbDjg7vph5HpoY3jg7vlibLlkIjjg7vml6Xku5jjg7vmmYLliLvjg7vmnJ/pmZDjg7vlm57mlbDjgarjganjga7mlbDlgKTjgpLlkKvjgoDnmbroqIDvvIjmnIDlhKrlhYjvvIlcbiIKICAgICIgIOOAkOWVj+mhjOODu+iqsumhjOOAkeePvueKtuOBruWVj+mhjOeCueOChOaHuOW/teOBqOOBl+OBpuaMmeOBkuOCieOCjOOBn+eZuuiogFxuIgogICAgIiAg44CQ5o+Q5qGI44O744Ki44Kk44OH44Ki44CR5paw44GX44GE5o+Q5qGI44CB5pS55ZaE5qGI44CB44Ki44Kk44OH44Ki44Gr6Zai44GZ44KL55m66KiAXG4iCiAgICAiICDjgJDos6rnlpHlv5znrZTjgJHos6rllY/jgajjgZ3jga7lm57nrZTjga7jgoTjgorlj5bjgopcbiIKICAgICIgIOOAkOiDjOaZr+ODu+ePvueKtuiqrOaYjuOAkeeKtuazgeiqrOaYjuOChOWJjeaPkOWFseacieOBq+mWouOBmeOCi+mHjeimgeOBqueZuuiogFxuIgogICAgIiAg44CQ5L6d6aC844O75oyH56S644CR6Kqw44GL44G444Gu5L6d6aC844O75oyH56S644O744Ki44Kv44K344On44Oz6KaB5rGCXG4iCiAgICAiLSDlkITnmbroqIDjga7lhYjpoK3jgavkuIroqJjjgqvjg4bjgrTjg6rlkI3jgpLjgJDjgJHjgafku5jjgZHjgabjgY/jgaDjgZXjgYTvvIjkvos6IOOAkOaVsOWApOWgseWRiuOAkeWjsuS4iuOBr+WJjeaciOavlDE1JeWil++8ieOAglxuIgogICAgIi0g5pWw5YCk44Gv5Y6f5paH44Gu44G+44G+5q6L44GX44Gm44GP44Gg44GV44GE77yI5L6LOiAz5Lu244CBMTUl44CBMjAyNi8wMy8xMOOAgTMw5YiG77yJ44CCXG4iCiAgICAiXG7jgrXjgqTjg5zjgqbjgrrjga7kvJrorbDmg4XloLE6XG57bWVldGluZ19pbmZvfSIKICAgICJcbuWPguiAg+izh+aWme+8iFBvd2VyUG9pbnTvvInjga7lhoXlrrk6XG57cmVmZXJlbmNlX21hdGVyaWFsfSIKICAgICJcbuaWh+Wtl+i1t+OBk+OBlzpcbnt0cmFuc2NyaXB0aW9ufSIKKQoKU0VTU0lPTl9ERUZBVUxUUyA9IHsKICAgICJzdW1tYXJ5IjogTm9uZSwKICAgICJzYXZlX3N1Y2Nlc3MiOiBGYWxzZSwKICAgICJzYXZlZF9maWxlX3BhdGgiOiBOb25lLAogICAgInNhdmVfZXJyb3IiOiBOb25lLAogICAgIm1lZXRpbmdfaW5mb19pbnB1dCI6ICIiLAogICAgInVwbG9hZGVyX3ZlcnNpb24iOiAwLAogICAgInRyYW5zY3JpcHRpb24iOiBOb25lLAogICAgInRyYW5zY3JpcHRpb25fc2F2ZV9zdWNjZXNzIjogRmFsc2UsCiAgICAic2F2ZWRfdHJhbnNjcmlwdGlvbl9maWxlX3BhdGgiOiBOb25lLAogICAgInRyYW5zY3JpcHRpb25fc2F2ZV9lcnJvciI6IE5vbmUsCn0K
+APP_TITLE = "議事録作成アプリ"
+PAGE_LAYOUT = "wide"
+
+SIZE_LIMIT_OPTIONS = ["25MB", "75MB"]
+MAX_UPLOAD_MB_BY_LABEL = {
+    "25MB": 25,
+    "75MB": 75,
+}
+UPLOAD_TYPES = ["mp3", "m4a", "mp4"]
+
+UPLOAD_PROMPT = "音声または動画ファイルをアップロードしてください (mp3, m4a, mp4)"
+MEETING_INFO_PROMPT = "会議情報を入力してください (予定情報をコピペ)"
+PPTX_UPLOAD_PROMPT = "参考資料（PowerPoint）をアップロードしてください（任意・最大7ファイル）"
+PPTX_MAX_FILES = 7
+PPTX_SUMMARY_SYSTEM_PROMPT = "あなたはPowerPointの内容を125字以内で簡潔に要約するアシスタントです。箇条書きは使わず1段落で答えてください。"
+PPTX_SUMMARY_USER_PROMPT = "以下のPowerPointのスライドテキストを125字以内で要約してください。\n\n{slide_text}"
+
+BUTTON_GENERATE = "議事録生成"
+BUTTON_CLEAR = "クリア"
+BUTTON_SAVE_MINUTES = "ローカルフォルダへ保存"
+BUTTON_SAVE_RAW = "文字起こし生データをローカルフォルダへ保存"
+
+DOWNLOAD_MINUTES_LABEL = "議事録をPCにダウンロード"
+DOWNLOAD_RAW_LABEL = "文字起こし生データをPCにダウンロード"
+
+MINUTES_FILE_NAME = "議事録.txt"
+RAW_TRANSCRIPTION_FILE_NAME = "文字起こし生データ.txt"
+OUTPUT_DIR = "output"
+
+OPENAI_WHISPER_MODEL = "whisper-1"
+OPENAI_SUMMARY_MODEL = "gpt-4o-mini"
+WHISPER_MAX_FILE_MB = 25
+
+# 言語指定: 日本語に固定することで認識精度を向上
+WHISPER_LANGUAGE = "ja"
+
+# 文字起こし後の単語置換辞書
+# キー: Whisperが誤認識しやすい表記 → 値: 正しい表記
+# 自社の専門用語・固有名詞に合わせて追加・編集してください
+TRANSCRIPTION_WORD_REPLACEMENTS = {
+    "配客状況": "廃却状況","政策省":"製作所","排却率":"廃却率"
+    # 例: "かいぎ": "会議",
+    # 例: "えんじにあ": "エンジニア",
+}
+
+# プロンプトヒント: 会議・議事録でよく使われる語句を渡すことで固有名詞や専門用語の精度を向上
+WHISPER_PROMPT = (
+    "これは日本語の会議音声です。議事録として文字起こしを行います。"
+    "参加者の発言をできるだけ正確に文字起こしてください。"
+    "アジェンダ、決定事項、タスク、期限、担当者などの情報を正確に記録してください。"
+)
+
+OPENAI_SYSTEM_PROMPT = "あなたは会議の議事録を作成するアシスタントです。"
+SUMMARY_PROMPT_TEMPLATE = (
+    "以下の会議の文字起こしを要約してください。以下のフォーマットで出力してください:\n"
+    "0. 会議基本情報（必ず次の4項目をこの順で出力）:\n"
+    "会議名: ...\n"
+    "日時: ...\n"
+    "参加者: ...\n"
+    "場所/URL: ...\n"
+    "1. 議題の説明: 会議の目的や概要\n"
+    "2. 主な発言: 重要なやり取りの要約（数値を伴う発言を優先、最低8件以上列挙）\n"
+    "3. 決定事項: 確定したタスクや合意点\n"
+    "\n出力ルール（2. 主な発言）:\n"
+    "- 最低8件、可能であれば10件以上の発言を箇条書きで列挙してください。\n"
+    "- 以下のカテゴリをすべて網羅するよう発言を抽出してください:\n"
+    "  【数値報告】件数・金額・割合・日付・時刻・期限・回数などの数値を含む発言（最優先）\n"
+    "  【問題・課題】現状の問題点や懸念として挙げられた発言\n"
+    "  【提案・アイデア】新しい提案、改善案、アイデアに関する発言\n"
+    "  【質疑応答】質問とその回答のやり取り\n"
+    "  【背景・現状説明】状況説明や前提共有に関する重要な発言\n"
+    "  【依頼・指示】誰かへの依頼・指示・アクション要求\n"
+    "- 各発言の先頭に上記カテゴリ名を【】で付けてください（例: 【数値報告】売上は前月比15%増）。\n"
+    "- 数値は原文のまま残してください（例: 3件、15%、2026/03/10、30分）。\n"
+    "\nサイボウズの会議情報:\n{meeting_info}"
+    "\n参考資料（PowerPoint）の内容:\n{reference_material}"
+    "\n文字起こし:\n{transcription}"
+)
+
+SESSION_DEFAULTS = {
+    "summary": None,
+    "save_success": False,
+    "saved_file_path": None,
+    "save_error": None,
+    "meeting_info_input": "",
+    "uploader_version": 0,
+    "transcription": None,
+    "transcription_save_success": False,
+    "saved_transcription_file_path": None,
+    "transcription_save_error": None,
+}
